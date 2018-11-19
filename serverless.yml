@@ -1,0 +1,63 @@
+service: my-app
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:us-east-1:486218663474:table/todos"
+
+functions:
+  listTodos:
+      handler: list.run
+      events:
+        - http:
+            path: todos
+            method: get
+  getTodo:
+    handler: get.run
+    events:
+      - http:
+          path: todos/{id}
+          method: get
+  createTodo:
+    handler: create.run
+    events:
+      - http:
+          path: todos
+          method: post
+  updateTodo:
+    handler: update.run
+    events:
+      - http:
+          path: todos/{id}
+          method: put
+  deleteTodo:
+    handler: delete.run
+    events:
+      - http:
+          path: todos/{id}
+          method: delete
+resources:
+  Resources:
+    TodosTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: todos
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
